@@ -10,67 +10,69 @@ import json
 opcodes = {
     'CLA': {
         'CODE': '0000', 
-        'NUMBER OF OPERANDS': 0
-        'TYPE OF OPERAND': None
+        'NUMBER OF OPERANDS': 0,
+        'TYPE OF OPERAND': None,
         'OUTPUT': []
-    }
+    },
     'LAC': {
         'CODE': '0001', 
-        'NUMBER OF OPERANDS': 1
-        'TYPE OF OPERAND': 'ADDRESS'
-        'OUTPUT': ['ACC']
-    }
+        'NUMBER OF OPERANDS': 1,
+        'TYPE OF OPERAND': 'ADDRESS',
+    },
     'SAC': {
         'CODE': '0010', 
-        'NUMBER OF OPERANDS': 1
-        'TYPE OF OPERAND': 'ADDRESS'
-        'OUTPUT': ['ACC']
-    }
+        'NUMBER OF OPERANDS': 1,
+        'TYPE OF OPERAND': 'ADDRESS',
+    },
     'ADD': {
         'CODE': '0011', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'ADDRESS'
-        'OUTPUT': ['ACC']
-    }
+    },
     'SUB': {
         'CODE': '0100', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'ADDRESS'
-    }
+    },
     'BRZ': {
         'CODE': '0101', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'LABEL'
-    }
+    },
     'BRN': {
         'CODE': '0110', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'LABEL'
-    }
+    },
     'BRP': {
         'CODE': '0111', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'LABEL'
-    }
+    },
     'INP': {
         'CODE': '1000', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'ADDRESS'
-    }
+    },
     'DSP': {
         'CODE': '1001', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'ADDRESS'
-    }
+    },
     'MUL': {
         'CODE': '1010', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'ADDRESS'
-    }
+    },
     'DIV': {
         'CODE': '1011', 
-        'NUMBER OF OPERANDS': 1
+        'NUMBER OF OPERANDS': 1,
         'TYPE OF OPERAND': 'ADDRESS'
+    },
+    'STP': {
+        'CODE': '1100', 
+        'NUMBER OF OPERANDS': 0,
+        'TYPE OF OPERAND': None
     }
 }
 
@@ -106,12 +108,12 @@ def first_pass(file):
             if line == '':
                 continue
 
-            try:
-                instruction = get_instruction(line)
-                instructions[instruction['location']] = instruction
-            except exception as e:
-                print(e + " at line No." + str(i))
-                success = False
+            instruction = get_instruction(line)
+            instructions[instruction['location']] = instruction
+            # except Exception as e:
+            #     print('Exception at line ' + str(location_counter))
+            #     print(e)
+            #     success = False
 
     success = success and check_symbol_table()
 
@@ -134,11 +136,13 @@ def get_instruction(line):
 
     """
 
+    global location_counter
+
     instruction = {
         "location": None, 
         "label": None, 
         "mnemonic": None, 
-        'opcode' : None
+        'opcode' : None,
         "operands": None, 
         "comment": None
     }
@@ -151,7 +155,7 @@ def get_instruction(line):
 
 
     # Assign address to instruction and increment location counter
-    instruction['location'] = location_counter
+    instruction['location'] = '0' * (8 - len(bin(location_counter)[2:])) + bin(location_counter)[2:]
     location_counter += 1
 
     # Check for label and insert in symbol table if exists
@@ -186,13 +190,14 @@ def put_in_symbol_table(label, address):
         else:
             symbol_table[label] = address
     
-def assign_opcode(opcode):
+def assign_opcode(instruction):
     """
         Assign Opcode if it is a valid opcode
         Input: Opcode in string format.
         Returns : None
         Raises an exception in case of invalid opcode.
     """
+    opcode = instruction['mnemonic']
     if opcode in opcodes:
         instruction['opcode'] = opcodes[opcode]
     else:
@@ -213,7 +218,15 @@ def check_operands(operand):
 
     return l
 
+def check_symbol_table():
+    for symbol in symbol_table:
+        if symbol_table[symbol] == None:
+            return False
+    return True
+
 def createJSON(nameOfFile, dict_data):
     with open(nameOfFile+'.json', 'w') as json_file:
         json.dump(dict_data, json_file)
 
+
+first_pass('code.txt')
