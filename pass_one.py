@@ -1,23 +1,112 @@
-def main(file):
+import json
+
+opcodes = {
+    'CLA': {
+        'CODE': '0000', 
+        'NUMBER OF OPERANDS': 0
+        'TYPE OF OPERAND': None
+        'OUTPUT': []
+    }
+    'LAC': {
+        'CODE': '0001', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+        'OUTPUT': ['ACC']
+    }
+    'SAC': {
+        'CODE': '0010', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+        'OUTPUT': ['ACC']
+    }
+    'ADD': {
+        'CODE': '0011', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+        'OUTPUT': ['ACC']
+    }
+    'SUB': {
+        'CODE': '0100', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+    }
+    'BRZ': {
+        'CODE': '0101', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'LABEL'
+    }
+    'BRN': {
+        'CODE': '0110', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'LABEL'
+    }
+    'BRP': {
+        'CODE': '0111', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'LABEL'
+    }
+    'INP': {
+        'CODE': '1000', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+    }
+    'DSP': {
+        'CODE': '1001', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+    }
+    'MUL': {
+        'CODE': '1010', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+    }
+    'DIV': {
+        'CODE': '1011', 
+        'NUMBER OF OPERANDS': 1
+        'TYPE OF OPERAND': 'ADDRESS'
+    }
+}
+
+instructions = {}
+symbol_table = {}
+location_counter = 0
+has_successfully_compiled = True
+
+
+def first_pass(file):
     """
         Main function which executes pass one of the assembler.
         Input: FIle name for which code needs to be translated 
         Return: None
     """
     # code for reading lines from file
-    lines = [line.rstrip('\n') for line in open(file)]
-    print(lines)
-    for i in range(len(lines)-1,-1,-1):
-        try:
-            lines[i]=decode(lines[i])
-        catch exception as e:
-            print(e+" at line No."+str(i))
+    global temp_file
+    global instructions
+    global symbol_table
+    global location_counter
+    global has_successfully_compiled
 
-    # dir=0
-    # line_counter=0
-    # while dir!=2:
-        
-def decode(line):
+    instructions = {}
+    symbol_table = {}
+    location_counter = 0
+    success = True
+
+
+    with open('code.txt') as file:
+        for line in file:
+            try:
+                instruction = get_instruction(line)
+                instructions[instruction['location']] = instruction
+            except exception as e:
+                print(e + " at line No." + str(i))
+                success = False
+
+    temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'has_successfully_compiled': success}
+    
+    createJSON('temp_file', temp_file)
+    return success
+
+def get_instruction(line):
     """
         Decodes a lines and extracts label, mnemonic, operands from a line
         (If there is any)
@@ -30,32 +119,43 @@ def decode(line):
         # 2) When the OP/CODE is not correct
 
     """
-    l={"label":None,"mnemonic":None,"operands":[]}
-    
-    #remove comments from the line
-    line=line[:line.index(";")]
 
-    #check for label
+    instruction = {
+        "location": None, 
+        "label": None, 
+        "mnemonic": None, 
+        'opcode' : None
+        "operands": None, 
+        "comment": None
+    }
+
+    # Check for comment and remove from line
+    if ';' in line:
+        line, comment = line.split(';')
+        instruction['comment'] = comment
+
+
+    # Assign address to instruction and increment location counter
+    instruction['location'] = location_counter
+    location_counter += 1
+
+    # Check for label and insert in symbol table if exists
     if ":" in line:
-        label=line[:line.index(":")]
-        l["label"]=check_label(label)
-        line=line[line.index(":")+1:]
+        label, line = line.split(': ', 1)
+        instruction["label"] = label
+        put_in_symbol_table(label, instruction['location'])
     
-    opcode=""
-    for i in range(len(line)):
-        if line[i]==" ":
-            if opcode!="":
-                label["mnemonic"]=check_opcode(opcode)
-                line=line[i+1:]
-                break
-        else:
-            opcode+=line[i]
+    # Split line into opcode and operands
+    words = list(line.split())
+    instruction['mnemonic'] = words[0]
+    instruction['operands'] = words[1:]
 
-    l["operands"]=check_operands(line)    
+    # Look up mnemonic in opcode table and assign information about the opcode
+    assign_opcode(instruction)
 
-    return l            
+    return instruction
 
-def check_label(label):
+def put_in_symbol_table(label, address):
     """
         Check if the format of label is correct.
         Input: Label in string format
@@ -63,43 +163,26 @@ def check_label(label):
         It raises and exception if label is not correct
         # Currently not implemented
     """
-    return label.replace(" ","")
+    global symbol_table
 
-def check_opcode(opcode):
+    if label != None:
+        if label in symbol_table and symbol_table[label] != None:
+            raise Exception('Exception: ' + label + ' declared multiple times')
+        else:
+            symbol_table[label] = address
+    
+
+def assign_opcode(opcode):
     """
-        Check if the Op-Code is correct or not.
-        Input: Op-code in string format.
-        Returns : Interger denoting the opcode .
-        Raises an exception in case of invalid op-code.
+        Assign Opcode if it is a valid opcode
+        Input: Opcode in string format.
+        Returns : None
+        Raises an exception in case of invalid opcode.
     """
-    opcode=opcode.lower()
-    if opcode=="CLA":
-        return 1
-    elif opcode=="LAC":
-        return 2
-    elif opcode=="SAC":
-        return 3
-    elif opcode=="ADD":
-        return 4
-    elif opcode=="SUB":
-        return 5
-    elif opcode=="BRZ":
-        return 6
-    elif opcode=="BRN":
-        return 7
-    elif opcode=="BRP":
-        return 8
-    elif opcode=="INP":
-        return 9
-    elif opcode=="DSP":
-        return 10
-    elif opcode=="MUL":
-        return 11
-    elif opcode=="DIV":
-        return 12
-    elif opcode=="STP":
-        return 13
-    raise Exception("Invalid OP-CODE "+opcode)
+    if opcode in opcodes:
+        instruction['opcode'] = opcodes[opcode]
+    else:
+        raise Exception(opcode + ' not a valid opcode')
     
 def check_operands(operand):
     """
@@ -115,8 +198,8 @@ def check_operands(operand):
         l.append(i)
 
     return l
-    
 
-    
-if __name__ == "__main__":
-    main("code.txt")
+def createJSON(nameOfFile, dict_data):
+    with open(nameOfFile+'.json', 'w') as json_file:
+        json.dump(dict_data, json_file)
+
