@@ -13,32 +13,27 @@ converts the input to object code
 Return: None
 '''
 
-def evaluate_comment():
+memory = {i: '000000000000' for i in range(100000)}
 
-evaluate = {'comment': evaluate_comment, 'unary': evaluate_unary, 'binary': evaluate_binary}
+def pass_two():
+	temp_file = json.load('temp_file.json')
+	symbol_table = temp_file['symbol_table']
+	instructions = temp_file['instructions']
 
-OPCODE = {
-	'CLA':'0000', 
-	'LAC': '0001', 
-	'SAC': '0010', 
-	'ADD': '0011', 
-	'SUB': '0100', 
-	'BRZ': '0101', 
-	'BRN': '0110',
-	'BRP': '0111',
-	'INP': '1000',
-	'DSP': '1001',
-	'MUL': '1010',
-	'DIV': '1011',
-	'STP': '1100',
-}
+	for location in instructions:
+		instruction = instructions[location]
+		translated_instruction = translate_instruction(instruction)
+		memory[instructions['location']] = translated_instruction
 
-def pass_two(input, symbol_table):
-	code = {}
-	location_counter = 0
-	for instruction in input:
-		if instruction['type'] == 'comment:
-			continue
-		if instruction['type']
-			code = OPCODE[instruction['opcode']]
-			
+def translate_instruction(instruction):
+	translated_instruction = ''
+	opcode = instruction['opcode']
+	translated_instruction += opcode['CODE']
+	if opcode['NUMBER OF OPERANDS'] == 0:
+		translated_instruction += '00000000'
+	else:
+		if opcode['TYPE OF OPERAND'] == 'ADDRESS':
+			translated_instruction += instructions['operands'][0]
+		else:
+			translated_instruction += symbol_table[instructions['operands'][0]]
+	return translated_instruction

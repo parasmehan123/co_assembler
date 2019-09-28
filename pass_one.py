@@ -1,3 +1,10 @@
+'''
+TODO:
+    assign_operand {check with opcode[number of operands], if type of operands is symbol, insert in symbol table}
+    check_symbol_table
+
+'''
+
 import json
 
 opcodes = {
@@ -94,12 +101,19 @@ def first_pass(file):
 
     with open('code.txt') as file:
         for line in file:
+
+            line = line.strip()
+            if line == '':
+                continue
+
             try:
                 instruction = get_instruction(line)
                 instructions[instruction['location']] = instruction
             except exception as e:
                 print(e + " at line No." + str(i))
                 success = False
+
+    success = success and check_symbol_table()
 
     temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'has_successfully_compiled': success}
     
@@ -133,6 +147,7 @@ def get_instruction(line):
     if ';' in line:
         line, comment = line.split(';')
         instruction['comment'] = comment
+
 
 
     # Assign address to instruction and increment location counter
@@ -171,7 +186,6 @@ def put_in_symbol_table(label, address):
         else:
             symbol_table[label] = address
     
-
 def assign_opcode(opcode):
     """
         Assign Opcode if it is a valid opcode
