@@ -1,8 +1,6 @@
 '''
 TODO:
-    assign_operand {check with opcode[number of operands], if type of operands is symbol, insert in symbol table}
-    check_symbol_table
-
+    Add the word 'Exception'
 '''
 
 import json
@@ -79,7 +77,7 @@ opcodes = {
 instructions = {}
 symbol_table = {}
 location_counter = 0
-has_successfully_compiled = True
+success = True
 
 
 def first_pass(file):
@@ -93,13 +91,11 @@ def first_pass(file):
     global instructions
     global symbol_table
     global location_counter
-    global has_successfully_compiled
+    global success
 
     instructions = {}
     symbol_table = {}
     location_counter = 0
-    success = True
-
 
     with open('code.txt') as file:
         for line in file:
@@ -110,14 +106,11 @@ def first_pass(file):
 
             instruction = get_instruction(line)
             instructions[instruction['location']] = instruction
-            # except Exception as e:
-            #     print('Exception at line ' + str(location_counter))
-            #     print(e)
-            #     success = False
 
-    success = success and check_symbol_table()
+    check_symbol_table()
+    check_for_stop()
 
-    temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'has_successfully_compiled': success}
+    temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'success': success}
     
     createJSON('temp_file', temp_file)
     return success
@@ -155,7 +148,7 @@ def get_instruction(line):
 
 
     # Assign address to instruction and increment location counter
-    instruction['location'] = '0' * (8 - len(bin(location_counter)[2:])) + bin(location_counter)[2:]
+    instruction['location'] = location_counter
     location_counter += 1
 
     # Check for label and insert in symbol table if exists
@@ -171,6 +164,7 @@ def get_instruction(line):
 
     # Look up mnemonic in opcode table and assign information about the opcode
     assign_opcode(instruction)
+    assign_operands(instruction)
 
     return instruction
 
@@ -184,11 +178,18 @@ def put_in_symbol_table(label, address):
     """
     global symbol_table
 
-    if label != None:
-        if label in symbol_table and symbol_table[label] != None:
-            raise Exception('Exception: ' + label + ' declared multiple times')
+    if address == None:
+        if label in symbol_table:
+            return
         else:
-            symbol_table[label] = address
+            symbol_table[label] = None
+            return
+
+    if label in symbol_table and symbol_table[label] != None and address != None:
+        print(instructions)
+        raise Exception('Exception: ' + label + ' declared multiple times')
+    else:
+        symbol_table[label] = address
     
 def assign_opcode(instruction):
     """
@@ -203,26 +204,33 @@ def assign_opcode(instruction):
     else:
         raise Exception(opcode + ' not a valid opcode')
     
-def check_operands(operand):
+def assign_operands(instruction):
     """
         Checks for operands 
-        Input : String
+        Input : 
         Returns : list of Operands ( Empty list if it string dosen't contain any element)
         Raises Invalid Syntax Error in Operands 
         #Not implemented yet : Need to handle cases like "abc, bcd , , efg" -> abc,bcd,efg
     """
 
-    l=[]
-    for i in operand.split(","):
-        l.append(i)
-
-    return l
-
+    if len(instruction["operands"]) != instruction["opcode"]["NUMBER OF OPERANDS"]:
+        raise Exception("Opcode supplied with wrong number of operands")
+    
+    if instruction["opcode"]["TYPE OF OPERAND"] == "LABEL":
+        put_in_symbol_table(instruction['operands'][0], None)
+ 
 def check_symbol_table():
     for symbol in symbol_table:
         if symbol_table[symbol] == None:
-            return False
+            raise Exception(symbol + " not defined")
     return True
+
+def check_for_stop():
+    global location_counter
+    global instructions
+
+    if instructions[location_counter - 1] != 'STP':
+        raise Exception("STP Missing at end of code")
 
 def createJSON(nameOfFile, dict_data):
     with open(nameOfFile+'.json', 'w') as json_file:

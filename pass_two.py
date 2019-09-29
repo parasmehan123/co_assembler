@@ -29,6 +29,7 @@ def second_pass():
 	locations = sorted(list(memory.keys()))
 	with open('machine_code.txt', 'w') as file:
 		for location in locations:
+			location = '0' * (8 - len(bin(location)[2:])) + bin(location)[2:]
 			file.write((location + ": " + memory[location] + "\n"))
 
 def translate_instruction(instruction, symbol_table):

@@ -1,4 +1,6 @@
-import pass_one
-
-if pass_one.has_successfully_compiled:
+try:
+	import pass_one
 	import pass_two
+
+except Exception as e:
+	print(e)
