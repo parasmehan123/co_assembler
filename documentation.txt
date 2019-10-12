@@ -1,0 +1,120 @@
+.................................
+
+MODULE pass_one
+.................................
+
+
+NAME
+    pass_one
+
+FUNCTIONS
+    assign_memory_to_variables()
+        Assign memory 
+        Input : None
+        Returns : None
+        Exceptions :
+    
+    assign_opcode(instruction)
+        Assign Opcode if it is a valid opcode
+        Input: Opcode in string format.
+        Returns : None
+        Exception:
+            #1  invalid opcode - no matching opcode found in opcode table
+    
+    assign_operands(instruction)
+        Checks for operands and insert in symbol table
+        Input : instruction
+        Returns : None
+        Exceptions:
+            #1  if Opcode supplied with wrong number of operands.
+    
+    check_for_stop()
+        Check if STP is missing at the end of code or not.
+        Input : None
+        Returns : None
+        Exceptions : 
+            #1  STP Missing at end of code.
+    
+    check_symbol_table()
+        Check if any label in symbol table has not been defined in the code
+        Input : None
+        Returns : None
+        Exceptions : 
+            #1 if Label is not defined.
+    
+    createJSON(nameOfFile, dict_data)
+        Save dictionary as a json file
+        Input: nameOfFile - string, dict_data - dictionary
+        Returns: None
+    
+    first_pass(file)
+        Executes pass one of the assembler.
+        Input: FIle name for which code needs to be translated 
+        Return: None
+    
+    get_instruction(line)
+        Decodes a lines and extracts label, mnemonic, operands from a line
+        (If there is any)
+        Input : Line in a string Format
+        Returns : A dictionay of label, mnemonic, operands
+            1) If they are not availabe, there will be None, in place of it.
+            2) operands would be a list of operands.
+        Exceptions:
+        #1  When Label format is not correct
+        #2  When the OP/CODE is not correct
+    
+    put_in_symbol_table(symbol, symbol_type, address)
+        Insert symbol, symbol type and its address into the symbol table
+        Input: symbol - string , symbol type- string, address- int
+        Returns : None
+        Exceptions:
+            #1  Symbol declared multiple times
+            #2  Same name used as a variable and label both
+
+DATA
+    instructions = {100: {'comment': None, 'label': None, 'location': 100,...
+    location_counter = 115
+    opcodes = {'ADD': {'CODE': '0011', 'NUMBER OF OPERANDS': 1, 'TYPE OF O...
+    success = True
+    symbol_table = {'A': {'ADDRESS': 113, 'TYPE': 'VARIABLE'}, 'B': {'ADDR...
+    temp_file = {'instructions': {100: {'comment': None, 'label': None, 'l...
+
+FILE
+    /Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py
+
+.................................
+
+MODULE pass_two
+.................................
+
+
+
+NAME
+    pass_two
+
+FUNCTIONS
+    get_binary_address(address)
+        Returns the 8 bit binary address in string form from an integer address in decimal form
+        Input: address - int
+        Returns: binary address - string
+    
+    second_pass()
+        Executes second pass of assembly process
+        Input : None
+        Returns : None
+    
+    translate_instruction(instruction, symbol_table)
+        Function to Translate instructions in binary form.
+        Input : instruction,symbol_table
+        return : translated_instruction : String
+
+DATA
+    __warningregistry__ = {'version': 0}
+    memory = {100: '000000000000', 101: '100001110001', 102: '100001110010...
+
+FILE
+    /Users/osheensachdev/Documents/GitHub/co_assembler/pass_two.py
+
+(END)
+
+
