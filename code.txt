@@ -1,13 +1,15 @@
-CLA
-INP 154
-INP 158
-L1: LAC 157
-SUB 158
-BRN L1
-BRP L1
-CLA
-BRZ L2
-DSP 158
-CLA
-BRZ L2
-L2: CLA
+START 100
+    CLA
+    INP A
+    INP B
+    LAC A
+    SUB B
+    BRN L1
+    DSP A
+    CLA
+    BRZ L2
+L1: DSP B
+    CLA
+    BRZ L2
+L2: STP
+END

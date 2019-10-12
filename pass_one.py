@@ -96,13 +96,29 @@ def first_pass(file):
     instructions = {}
     symbol_table = {}
     location_counter = 0
-
+    start_flag = False
+    end_flag = False
+    
     with open('code.txt') as file:
         for line in file:
-
+                    
             line = line.strip()
             if line == '':
                 continue
+
+            if start_flag == False: 
+                if line.split()[0] != "START":
+                    continue
+                if len(line.split()) != 2:
+                    raise Exception("Exception : More than one or zero operands found!!")
+                start_flag = True
+                try:
+                    location_counter = int(line.split()[1])
+                except :
+                    raise Exception("Exception : Wrong Address")
+                continue
+            if line == 'END':
+              break
 
             instruction = get_instruction(line)
             instructions[instruction['location']] = instruction
@@ -155,7 +171,7 @@ def get_instruction(line):
     if ":" in line:
         label, line = line.split(': ', 1)
         instruction["label"] = label
-        put_in_symbol_table(label, instruction['location'])
+        put_in_symbol_table(label, 'LABEL', instruction['location'])
     
     # Split line into opcode and operands
     words = list(line.split())
@@ -220,10 +236,9 @@ def assign_operands(instruction):
     if len(instruction["operands"]) != instruction["opcode"]["NUMBER OF OPERANDS"]:
         raise Exception("Opcode supplied with wrong number of operands")
     
-    if instruction["opcode"]["TYPE OF OPERAND"] == "LABEL":
-        put_in_symbol_table(instruction['operands'][0], None)
-        
-        
+    put_in_symbol_table(instruction['operands'][0], instruction["opcode"]["TYPE OF OPERAND"], None)
+
+
 def check_symbol_table():
     global symbol_table
     
