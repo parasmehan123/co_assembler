@@ -1,3 +1,6 @@
+import pass_one
+import pass_two
+
 try:
 	import pass_one
 	import pass_two

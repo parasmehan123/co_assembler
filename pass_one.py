@@ -3,6 +3,27 @@ TODO:
     Add the word 'Exception'
 '''
 
+
+'''
+Osheens-MacBook-Air-1115:co_assembler osheensachdev$ python3 Main.py 
+list index out of range
+Osheens-MacBook-Air-1115:co_assembler osheensachdev$ 
+
+
+Traceback (most recent call last):
+  File "Main.py", line 1, in <module>
+    import pass_one
+  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 269, in <module>
+    first_pass('code.txt')
+  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 123, in first_pass
+    instruction = get_instruction(line)
+  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 183, in get_instruction
+    assign_operands(instruction)
+  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 239, in assign_operands
+    put_in_symbol_table(instruction['operands'][0], instruction["opcode"]["TYPE OF OPERAND"], None)
+IndexError: list index out of range
+
+'''
 import json
 
 opcodes = {
@@ -100,8 +121,7 @@ def first_pass(file):
     end_flag = False
     
     with open('code.txt') as file:
-        for line in file:
-                    
+        for line in file: 
             line = line.strip()
             if line == '':
                 continue
@@ -125,7 +145,7 @@ def first_pass(file):
 
     check_symbol_table()
     check_for_stop()
-    allot_memory_to_variables()
+    assign_memory_to_variables()
     temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'success': success}
     
     createJSON('temp_file', temp_file)
@@ -206,7 +226,6 @@ def put_in_symbol_table(symbol, symbol_type, address):
             return
 
     if symbol in symbol_table and symbol_table[symbol]['ADDRESS'] != None and address != None:
-        print(instructions)
         raise Exception('Exception: ' + symbol + ' declared multiple times')
     else:
         symbol_table[symbol] = {'TYPE': symbol_type, 'ADDRESS':address}
@@ -236,7 +255,8 @@ def assign_operands(instruction):
     if len(instruction["operands"]) != instruction["opcode"]["NUMBER OF OPERANDS"]:
         raise Exception("Opcode supplied with wrong number of operands")
     
-    put_in_symbol_table(instruction['operands'][0], instruction["opcode"]["TYPE OF OPERAND"], None)
+    if instruction["opcode"]["NUMBER OF OPERANDS"] == 1:
+        put_in_symbol_table(instruction['operands'][0], instruction["opcode"]["TYPE OF OPERAND"], None)
 
 
 def check_symbol_table():
@@ -250,8 +270,7 @@ def check_symbol_table():
 def check_for_stop():
     global location_counter
     global instructions
-
-    if instructions[location_counter - 1] != 'STP':
+    if instructions[location_counter - 1]['mnemonic'] != 'STP':
         raise Exception("STP Missing at end of code")
 
 def createJSON(nameOfFile, dict_data):
