@@ -8,29 +8,29 @@ import json
 opcodes = {
     'CLA': {
         'CODE': '0000', 
-        'NUMBER OF OPERANDS': 0,
+        'NUMBER OF OPERANDS': 0,  
         'TYPE OF OPERAND': None,
         'OUTPUT': []
     },
     'LAC': {
         'CODE': '0001', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS',
+        'TYPE OF OPERAND': 'VARIABLE',
     },
     'SAC': {
         'CODE': '0010', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS',
+        'TYPE OF OPERAND': 'VARIABLE',
     },
     'ADD': {
         'CODE': '0011', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS'
+        'TYPE OF OPERAND': 'VARIABLE'
     },
     'SUB': {
         'CODE': '0100', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS'
+        'TYPE OF OPERAND': 'VARIABLE'
     },
     'BRZ': {
         'CODE': '0101', 
@@ -50,22 +50,22 @@ opcodes = {
     'INP': {
         'CODE': '1000', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS'
+        'TYPE OF OPERAND': 'VARIABLE'
     },
     'DSP': {
         'CODE': '1001', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS'
+        'TYPE OF OPERAND': 'VARIABLE'
     },
     'MUL': {
         'CODE': '1010', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS'
+        'TYPE OF OPERAND': 'VARIABLE'
     },
     'DIV': {
         'CODE': '1011', 
         'NUMBER OF OPERANDS': 1,
-        'TYPE OF OPERAND': 'ADDRESS'
+        'TYPE OF OPERAND': 'VARIABLE'
     },
     'STP': {
         'CODE': '1100', 
@@ -109,7 +109,7 @@ def first_pass(file):
 
     check_symbol_table()
     check_for_stop()
-
+    allot_memory_to_variables()
     temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'success': success}
     
     createJSON('temp_file', temp_file)
@@ -168,7 +168,7 @@ def get_instruction(line):
 
     return instruction
 
-def put_in_symbol_table(label, address):
+def put_in_symbol_table(symbol, symbol_type, address):
     """
         Check if the format of label is correct.
         Input: Label in string format
@@ -177,19 +177,23 @@ def put_in_symbol_table(label, address):
         # Currently not implemented
     """
     global symbol_table
+    
+    if symbol in symbol_table:
+        if symbol_table[symbol]['TYPE'] != symbol_type:
+            raise Exception('Exception: ' + symbol + 'used as LABEL and VARIABLE both')
 
     if address == None:
-        if label in symbol_table:
+        if symbol in symbol_table:
             return
         else:
-            symbol_table[label] = None
+            symbol_table[symbol] = {'TYPE': symbol_type, 'ADDRESS': address}
             return
 
-    if label in symbol_table and symbol_table[label] != None and address != None:
+    if symbol in symbol_table and symbol_table[symbol]['ADDRESS'] != None and address != None:
         print(instructions)
-        raise Exception('Exception: ' + label + ' declared multiple times')
+        raise Exception('Exception: ' + symbol + ' declared multiple times')
     else:
-        symbol_table[label] = address
+        symbol_table[symbol] = {'TYPE': symbol_type, 'ADDRESS':address}
     
 def assign_opcode(instruction):
     """
@@ -218,10 +222,13 @@ def assign_operands(instruction):
     
     if instruction["opcode"]["TYPE OF OPERAND"] == "LABEL":
         put_in_symbol_table(instruction['operands'][0], None)
- 
+        
+        
 def check_symbol_table():
+    global symbol_table
+    
     for symbol in symbol_table:
-        if symbol_table[symbol] == None:
+        if symbol_table[symbol]['TYPE'] == 'LABEL' and symbol_table[symbol]["ADDRESS"] == None:
             raise Exception(symbol + " not defined")
     return True
 
@@ -236,5 +243,12 @@ def createJSON(nameOfFile, dict_data):
     with open(nameOfFile+'.json', 'w') as json_file:
         json.dump(dict_data, json_file)
 
+def assign_memory_to_variables():
+    global location_counter
+    global symbol_table
+    for symbol in symbol_table:
+        if symbol_table[symbol]['TYPE'] == 'VARIABLE':
+            symbol_table[symbol]["ADDRESS"] = location_counter
+            location_counter += 1
 
 first_pass('code.txt')

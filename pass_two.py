@@ -39,11 +39,7 @@ def translate_instruction(instruction, symbol_table):
 	if opcode['NUMBER OF OPERANDS'] == 0:
 		translated_instruction += '00000000'
 	else:
-		if opcode['TYPE OF OPERAND'] == 'ADDRESS':
-			translated_instruction += '0' * (8 - len(bin(int(instruction['operands'][0]))[2:])) + bin(int(instruction['operands'][0]))[2:]
-			#+ bin(instruction['operands'][0])[2:]
-		else:
-			translated_instruction += (symbol_table[instruction['operands'][0]])
+		translated_instruction += (symbol_table[instruction['operands'][0]])
 	return translated_instruction
 
 
