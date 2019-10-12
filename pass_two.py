@@ -1,46 +1,10 @@
-'''
-TODO:
-    Add the word 'Exception'
-'''
-
-
-'''
-
-01100100: 000000000000
-01100101: 100001110001
-01100110: 100001110010
-01100111: 000101110001
-01101000: 010001110010
-01101001: 011001101101
-01101010: 100101110001
-01101011: 000000000000
-01101100: 010101110000
-01101101: 100101110010
-01101110: 000000000000
-01101111: 010101110000
-01110000: 110000000000
-01110001: XXXXXXXX
-01110010: XXXXXXXX
-
-
-
-'''
-'''
-Input: input - list of dictionaries, each dictionary corresponds to one line of code and has fields:
-[
-	'is_comment',
-	'opcode', 
-	'length', 
-	'line'
-]
-
-Function:
-converts the input to object code
-
-Return: None
-'''
 
 def get_binary_address(address):
+	"""
+    Returns the 8 bit binary address in string form from an integer address in decimal form
+    Input: address - int
+    Returns: binary address - string
+    """
 	return '0' * (8 - len(bin(address)[2:])) + bin(address)[2:]
   
 
@@ -49,26 +13,39 @@ import json
 memory = {}
 
 def second_pass():
+	"""
+    Executes second pass of assembly process
+    Input : None
+    Returns : None
+    """
 	temp_file = json.load(open('temp_file.json'))
 	symbol_table = temp_file['symbol_table']
 	instructions = temp_file['instructions']
 
+    # assign physical memory space to each instruction
 	for location in instructions:
 		instruction = instructions[location]
 		translated_instruction = translate_instruction(instruction, symbol_table)
 		memory[instruction['location']] = translated_instruction
 
+	# assign physical memory space to each variable
 	for symbol in symbol_table:
 		if symbol_table[symbol]['TYPE'] == 'VARIABLE':
 			memory[symbol_table[symbol]['ADDRESS']] = 'XXXXXXXXXXXX'
 
-            
+    # write the location: memory[location] for each location in memory into a final ouput file
 	locations = sorted(list(memory.keys()))
 	with open('machine_code.txt', 'w') as file:
 		for location in locations:
 			file.write((get_binary_address(location) + ": " + memory[location] + "\n"))
 
 def translate_instruction(instruction, symbol_table):
+	"""
+	Function to Translate instructions in binary form.
+	Input : instruction,symbol_table
+	return : translated_instruction : String
+	
+	"""
 	translated_instruction = ''
 	opcode = instruction['opcode']
 	translated_instruction += opcode['CODE']

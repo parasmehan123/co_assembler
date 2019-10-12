@@ -1,29 +1,5 @@
-'''
-TODO:
-    Add the word 'Exception'
-'''
 
 
-'''
-Osheens-MacBook-Air-1115:co_assembler osheensachdev$ python3 Main.py 
-list index out of range
-Osheens-MacBook-Air-1115:co_assembler osheensachdev$ 
-
-
-Traceback (most recent call last):
-  File "Main.py", line 1, in <module>
-    import pass_one
-  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 269, in <module>
-    first_pass('code.txt')
-  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 123, in first_pass
-    instruction = get_instruction(line)
-  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 183, in get_instruction
-    assign_operands(instruction)
-  File "/Users/osheensachdev/Documents/GitHub/co_assembler/pass_one.py", line 239, in assign_operands
-    put_in_symbol_table(instruction['operands'][0], instruction["opcode"]["TYPE OF OPERAND"], None)
-IndexError: list index out of range
-
-'''
 import json
 
 opcodes = {
@@ -103,11 +79,11 @@ success = True
 
 def first_pass(file):
     """
-        Main function which executes pass one of the assembler.
+        Executes pass one of the assembler.
         Input: FIle name for which code needs to be translated 
         Return: None
     """
-    # code for reading lines from file
+
     global temp_file
     global instructions
     global symbol_table
@@ -126,6 +102,7 @@ def first_pass(file):
             if line == '':
                 continue
 
+            # Wait for "START" Assembler directive
             if start_flag == False: 
                 if line.split()[0] != "START":
                     continue
@@ -137,18 +114,24 @@ def first_pass(file):
                 except :
                     raise Exception("Exception : Wrong Address")
                 continue
+            # If END Assembler directive found stop reading
             if line == 'END':
               break
 
+            # Process each instruction of the Assembly language code
             instruction = get_instruction(line)
             instructions[instruction['location']] = instruction
 
+    # Once all instructions have been processed check if symbol table has any label without an address
     check_symbol_table()
+    # Check if code contains stop or not
     check_for_stop()
+    # Assign memory to all the variables used in Assembly Language
     assign_memory_to_variables()
+    # Save all pass one output into a file.
     temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'success': success}
-    
     createJSON('temp_file', temp_file)
+    
     return success
 
 def get_instruction(line):
@@ -159,9 +142,9 @@ def get_instruction(line):
         Returns : A dictionay of label, mnemonic, operands
             1) If they are not availabe, there will be None, in place of it.
             2) operands would be a list of operands.
-        # It raises the following exceptions:
-        # 1) When Label format is not correct
-        # 2) When the OP/CODE is not correct
+        Exceptions:
+        #1  When Label format is not correct
+        #2  When the OP/CODE is not correct
 
     """
 
@@ -206,11 +189,12 @@ def get_instruction(line):
 
 def put_in_symbol_table(symbol, symbol_type, address):
     """
-        Check if the format of label is correct.
-        Input: Label in string format
-        Returns : Label in correct string format
-        It raises and exception if label is not correct
-        # Currently not implemented
+        Insert symbol, symbol type and its address into the symbol table
+        Input: symbol - string , symbol type- string, address- int
+        Returns : None
+        Exceptions:
+            #1  Symbol declared multiple times
+            #2  Same name used as a variable and label both
     """
     global symbol_table
     
@@ -235,7 +219,8 @@ def assign_opcode(instruction):
         Assign Opcode if it is a valid opcode
         Input: Opcode in string format.
         Returns : None
-        Raises an exception in case of invalid opcode.
+        Exception:
+            #1  invalid opcode - no matching opcode found in opcode table
     """
     opcode = instruction['mnemonic']
     if opcode in opcodes:
@@ -245,11 +230,11 @@ def assign_opcode(instruction):
     
 def assign_operands(instruction):
     """
-        Checks for operands 
-        Input : 
-        Returns : list of Operands ( Empty list if it string dosen't contain any element)
-        Raises Invalid Syntax Error in Operands 
-        #Not implemented yet : Need to handle cases like "abc, bcd , , efg" -> abc,bcd,efg
+        Checks for operands and insert in symbol table
+        Input : instruction
+        Returns : None
+        Exceptions:
+            #1  if Opcode supplied with wrong number of operands.
     """
 
     if len(instruction["operands"]) != instruction["opcode"]["NUMBER OF OPERANDS"]:
@@ -260,6 +245,14 @@ def assign_operands(instruction):
 
 
 def check_symbol_table():
+    """
+    Check if any label in symbol table has not been defined in the code
+    Input : None
+    Returns : None
+    Exceptions : 
+        #1 if Label is not defined.
+    
+    """
     global symbol_table
     
     for symbol in symbol_table:
@@ -268,16 +261,27 @@ def check_symbol_table():
     return True
 
 def check_for_stop():
+    """
+    Check if STP is missing at the end of code or not.
+    Input : None
+    Returns : None
+    Exceptions : 
+        #1  STP Missing at end of code.
+    """
     global location_counter
     global instructions
     if instructions[location_counter - 1]['mnemonic'] != 'STP':
         raise Exception("STP Missing at end of code")
 
-def createJSON(nameOfFile, dict_data):
-    with open(nameOfFile+'.json', 'w') as json_file:
-        json.dump(dict_data, json_file)
 
 def assign_memory_to_variables():
+    """
+    Assign memory 
+    Input : None
+    Returns : None
+    Exceptions : 
+      
+    """
     global location_counter
     global symbol_table
     for symbol in symbol_table:
@@ -285,4 +289,16 @@ def assign_memory_to_variables():
             symbol_table[symbol]["ADDRESS"] = location_counter
             location_counter += 1
 
+            
+def createJSON(nameOfFile, dict_data):
+    """
+    Save dictionary as a json file
+    Input: nameOfFile - string, dict_data - dictionary
+    Returns: None
+    """
+    with open(nameOfFile+'.json', 'w') as json_file:
+          json.dump(dict_data, json_file)
+
+
 first_pass('code.txt')
+
