@@ -7,6 +7,9 @@ MODULE pass_one
 NAME
     pass_one
 
+DESCRIPTION
+pass_one contains the function first_pass(name_of_file) that is used to execute the first pass of an assembler. It reads the code line by line and for each instruction between START and END assembler directives and calls the get_instruction function on them. The get_instruction function decodes the instruction. The decoded instruction is then stored. After reading all the instructions and simultaneously storing all the labels and variables in the symbol table, the symbol table is checked to make sure no labels have been left undefined. Presence of STP is checked at end of code. Then variables are assigned virtual memory space. Finally the instructions and symbol table are written into a temporary file.
+
 FUNCTIONS
     assign_memory_to_variables()
         Assign memory 
@@ -53,11 +56,11 @@ FUNCTIONS
         Return: None
     
     get_instruction(line)
-        Decodes a lines and extracts label, mnemonic, operands from a line
+        Decodes a line and extracts label, mnemonic, operands from a line
         (If there is any)
         Input : Line in a string Format
-        Returns : A dictionay of label, mnemonic, operands
-            1) If they are not availabe, there will be None, in place of it.
+        Returns : A dictionary of label, mnemonic, operands
+            1) If they are not available, there will be None, in place of it.
             2) operands would be a list of operands.
         Exceptions:
         #1  When Label format is not correct
