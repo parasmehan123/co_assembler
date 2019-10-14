@@ -107,7 +107,7 @@ def first_pass():
                 if line.split()[0] != "START":
                     continue
                 if len(line.split()) != 2:
-                    raise Exception("Exception : More than one or zero operands found!!")
+                    raise Exception("Exception : START Assembler directive supplied with wrong number of operands")
                 start_flag = True
                 try:
                     location_counter = int(line.split()[1])
@@ -228,6 +228,7 @@ def assign_opcode(instruction):
             #1  invalid opcode - no matching opcode found in opcode table
     """
     opcode = instruction['mnemonic']
+
     if opcode in opcodes:
         instruction['opcode'] = opcodes[opcode]
     else:
