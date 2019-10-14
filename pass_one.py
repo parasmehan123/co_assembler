@@ -77,7 +77,7 @@ location_counter = 0
 success = True
 
 
-def first_pass(file):
+def first_pass():
     """
         Executes pass one of the assembler.
         Input: FIle name for which code needs to be translated 
@@ -96,7 +96,7 @@ def first_pass(file):
     start_flag = False
     end_flag = False
     
-    with open('code.txt') as file:
+    with open("code.txt") as file:
         for line in file: 
             line = line.strip()
             if line == '':
@@ -116,12 +116,16 @@ def first_pass(file):
                 continue
             # If END Assembler directive found stop reading
             if line == 'END':
-              break
+                end_flag = True
+                break
 
             # Process each instruction of the Assembly language code
             instruction = get_instruction(line)
             instructions[instruction['location']] = instruction
-
+    if start_flag == False:
+        raise Exception("Exception: START not found!")
+    if end_flag == False:
+        raise Exception("Exception: END not found")
     # Once all instructions have been processed check if symbol table has any label without an address
     check_symbol_table()
     # Check if code contains stop or not
@@ -130,6 +134,7 @@ def first_pass(file):
     assign_memory_to_variables()
     # Save all pass one output into a file.
     temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'success': success}
+    print('tempfile:' , temp_file)
     createJSON('temp_file', temp_file)
     
     return success
@@ -299,6 +304,4 @@ def createJSON(nameOfFile, dict_data):
     with open(nameOfFile+'.json', 'w') as json_file:
           json.dump(dict_data, json_file)
 
-
-first_pass('code.txt')
 

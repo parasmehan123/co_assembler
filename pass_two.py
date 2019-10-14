@@ -55,5 +55,5 @@ def translate_instruction(instruction, symbol_table):
 		translated_instruction += get_binary_address(symbol_table[instruction['operands'][0]]['ADDRESS'])
 	return translated_instruction
 
-
-second_pass()
+if __name__ == "__main__":
+	second_pass()
