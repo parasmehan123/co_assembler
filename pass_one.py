@@ -109,12 +109,12 @@ def first_pass():
                 if line.split()[0] != "START":
                     continue
                 if len(line.split()) != 2:
-                    raise Exception("Exception : START Assembler directive supplied with wrong number of operands")
+                    raise Exception('Exception : (Line No. ' + line_number + ') ' + 'START Assembler directive supplied with wrong number of operands')
                 start_flag = True
                 try:
                     location_counter = int(line.split()[1])
                 except :
-                    raise Exception("Exception : Wrong Address")
+                    raise Exception('Exception :  (Line No. ' + line_number + ') ' + 'Address given to START as argument is not an integer')
                 continue
             # If END Assembler directive found stop reading
             if line == 'END':
@@ -136,7 +136,6 @@ def first_pass():
     assign_memory_to_variables()
     # Save all pass one output into a file.
     temp_file = {'instructions': instructions, 'symbol_table': symbol_table, 'success': success}
-    print('tempfile:' , temp_file)
     createJSON('temp_file', temp_file)
     
     return success
@@ -211,7 +210,7 @@ def put_in_symbol_table(symbol, symbol_type, address):
     
     if symbol in symbol_table:
         if symbol_table[symbol]['TYPE'] != symbol_type:
-            raise Exception('Exception: ' + symbol + 'used as LABEL and VARIABLE both')
+            raise Exception('Exception: ' + symbol + ' used as LABEL and VARIABLE both')
 
     if address == None:
         if symbol in symbol_table:
