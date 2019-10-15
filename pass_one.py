@@ -74,8 +74,8 @@ opcodes = {
 instructions = {}
 symbol_table = {}
 location_counter = 0
+line_number = 0
 success = True
-
 
 def first_pass():
     """
@@ -87,6 +87,7 @@ def first_pass():
     global temp_file
     global instructions
     global symbol_table
+    global line_number
     global location_counter
     global success
 
@@ -98,6 +99,7 @@ def first_pass():
     
     with open("code.txt") as file:
         for line in file: 
+            line_number += 1
             line = line.strip()
             if line == '':
                 continue
@@ -153,9 +155,11 @@ def get_instruction(line):
 
     """
 
+    global line_number
     global location_counter
 
     instruction = {
+        "line_number": None,
         "location": None, 
         "label": None, 
         "mnemonic": None, 
@@ -170,6 +174,8 @@ def get_instruction(line):
         instruction['comment'] = comment
 
 
+    # Assign line number to instruction
+    instruction['line_number'] = line_number
 
     # Assign address to instruction and increment location counter
     instruction['location'] = location_counter
@@ -232,7 +238,7 @@ def assign_opcode(instruction):
     if opcode in opcodes:
         instruction['opcode'] = opcodes[opcode]
     else:
-        raise Exception(opcode + ' not a valid opcode')
+        raise Exception( 'Exception: (Line No. ' + str(instruction['line_number']) + ') ' + opcode + ' not a valid opcode')
     
 def assign_operands(instruction):
     """
@@ -244,11 +250,10 @@ def assign_operands(instruction):
     """
 
     if len(instruction["operands"]) != instruction["opcode"]["NUMBER OF OPERANDS"]:
-        raise Exception("Opcode supplied with wrong number of operands")
+        raise Exception('Exception: (Line No. ' + str(instruction['line_number']) + ') ' + "Opcode supplied with wrong number of operands")
     
     if instruction["opcode"]["NUMBER OF OPERANDS"] == 1:
         put_in_symbol_table(instruction['operands'][0], instruction["opcode"]["TYPE OF OPERAND"], None)
-
 
 def check_symbol_table():
     """
@@ -280,7 +285,6 @@ def check_for_stop():
     if (location_counter - 1) not in instructions or instructions[location_counter - 1]['mnemonic'] != 'STP':
         raise Exception("STP Missing at end of code")
 
-
 def assign_memory_to_variables():
     """
     Assign memory 
@@ -295,7 +299,6 @@ def assign_memory_to_variables():
         if symbol_table[symbol]['TYPE'] == 'VARIABLE':
             symbol_table[symbol]["ADDRESS"] = location_counter
             location_counter += 1
-
             
 def createJSON(nameOfFile, dict_data):
     """
