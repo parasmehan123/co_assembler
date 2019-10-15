@@ -276,7 +276,8 @@ def check_for_stop():
     """
     global location_counter
     global instructions
-    if instructions[location_counter - 1]['mnemonic'] != 'STP':
+
+    if (location_counter - 1) not in instructions or instructions[location_counter - 1]['mnemonic'] != 'STP':
         raise Exception("STP Missing at end of code")
 
 
